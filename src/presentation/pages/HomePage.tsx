@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { AudioRecorderButton } from '../components/AudioRecorderButton';
-import { AudioSendButton } from '../components/AudioSendButton';
+import { AudioRecorderButton } from '../components/audio/AudioRecorderButton';
+import { AudioSendButton } from '../components/audio/AudioSendButton';
 import { Audio } from '../../domain/audio/Audio';
-import { ThemeSwitcher } from '../components/ThemeSwitcher';
+import { ThemeSwitcher } from '../components/theme/ThemeSwitcher';
 
 import { Typography } from 'antd';
 import Paragraph from 'antd/es/typography/Paragraph';

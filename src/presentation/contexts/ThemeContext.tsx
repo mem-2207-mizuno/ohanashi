@@ -24,7 +24,11 @@ export const ThemeProvider: React.FC<Props> = ({ children }) => {
           style={{
             minHeight: '100vh',
             minWidth: '100vw',
-            background: themeConfig.token?.colorBgBase,
+            backgroundColor: themeConfig.token?.colorBgBase,
+            padding: themeConfig.token?.padding,
+            borderRadius: themeConfig.token?.borderRadius,
+            color: themeConfig.token?.colorPrimaryText,
+            fontSize: themeConfig.token?.fontSize,
           }}
         >
           {children}

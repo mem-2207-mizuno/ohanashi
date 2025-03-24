@@ -1,7 +1,7 @@
 import React, { useContext } from 'react';
 import { Select } from 'antd';
-import type { ThemeKey } from '../styles/themes';
-import { ThemeContext } from '../hooks/useThemeContext';
+import type { ThemeKey } from '../../styles/themes';
+import { ThemeContext } from '../../hooks/useThemeContext';
 
 const THEME_OPTIONS: ThemeKey[] = [
   'default',
