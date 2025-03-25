@@ -18,12 +18,15 @@
     "antd": "^5.24.4",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-    "react-voice-visualizer": "^2.0.8"
+    "react-voice-visualizer": "^2.0.8",
+    "uuid": "^11.1.0",
+    "zustand": "^5.0.3"
   },
   "devDependencies": {
     "@eslint/js": "^9.21.0",
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.2.0",
+    "@types/audioworklet": "^0.0.72",
     "@types/react": "^19.0.10",
     "@types/react-dom": "^19.0.4",
     "@vitejs/plugin-react-swc": "^3.8.0",

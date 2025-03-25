@@ -1,31 +1,70 @@
-import React, { useState } from 'react';
-import { AudioRecorderButton } from '../components/audio/AudioRecorderButton';
-import { AudioSendButton } from '../components/audio/AudioSendButton';
-import { Audio } from '../../domain/audio/Audio';
-import { ThemeSwitcher } from '../components/theme/ThemeSwitcher';
+import React, { useEffect } from 'react';
 
-import { Typography } from 'antd';
-import Paragraph from 'antd/es/typography/Paragraph';
-const { Title } = Typography;
+import { Avatar, List, theme } from 'antd';
+import { VoiceActivityRecordButton } from '../components/audio/VoiceActivityRecordButton';
+import {
+  HomeMain,
+  HomePageContainer,
+  TalkerWrapper,
+  VoiceControllerWrapper,
+} from './HomePageStyle';
+import Item from 'antd/es/descriptions/Item';
+import { useChatStore } from '../stores/chatStore';
+import { useChat } from '../hooks/useChat';
 
 export const HomePage: React.FC = () => {
-  const [recordedAudio, setRecordedAudio] = useState<Audio | null>(null);
+  const chatLogs = useChatStore((state) => state.chatLogs);
+  const { throwChat } = useChat();
 
-  const handleStop = (audio: Audio) => {
-    // 録音が停止したら受け取ったAudioをstateに保存
-    setRecordedAudio(audio);
-  };
+  const { token } = theme.useToken();
+
+  useEffect(() => {
+    if (chatLogs.length > 0 && chatLogs.slice(-1)[0].talker === 'user') {
+      throwChat();
+    }
+  }, [chatLogs, throwChat]);
 
   return (
-    <div style={{ padding: 24 }}>
-      <ThemeSwitcher />
-      <Title>音声録音デモ</Title>
-      <Paragraph>
-        録音ボタンを押して、録音後にアップロードができます。
-      </Paragraph>
+    <HomePageContainer>
+      <HomeMain>
+        <TalkerWrapper backgroundColor={token.colorText}>
+          <Avatar
+            src={`https://api.dicebear.com/7.x/miniavs/svg?seed=100`}
+            size="large"
+          />
+        </TalkerWrapper>
 
-      <AudioRecorderButton onStop={handleStop} />
-      <AudioSendButton audio={recordedAudio} />
-    </div>
+        <div
+          style={{
+            overflow: 'scroll',
+            height: '100%',
+            width: '50vw',
+            backgroundColor: token.colorFill,
+          }}
+        >
+          <List>
+            {chatLogs.map((chat, i) => {
+              return (
+                <Item key={i}>
+                  <List.Item.Meta
+                    avatar={
+                      <Avatar
+                        src={`https://api.dicebear.com/7.x/miniavs/svg?seed=${
+                          chat.talker === 'ai' ? '100' : '3'
+                        }`}
+                      />
+                    }
+                    title={chat.text}
+                  />
+                </Item>
+              );
+            })}
+          </List>
+        </div>
+      </HomeMain>
+      <VoiceControllerWrapper>
+        <VoiceActivityRecordButton />
+      </VoiceControllerWrapper>
+    </HomePageContainer>
   );
 };

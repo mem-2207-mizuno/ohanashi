@@ -1,12 +1,14 @@
-import { Audio } from '../../domain/audio/Audio'
-import { config } from '../config'
+import { Audio } from '../../domain/voice/Audio';
+import { AudioUploadResponse } from '../../domain/voice/types/AudioUploadResponse';
+import { IVoiceUploader } from '../../interfaces/voice/IVoiceUploader';
+import { config } from '../config';
 
 /**
  * 音声データをDifyのエンドポイントに送信し、
  * その後、ファイルIDを使ってワークフローを実行する例
  */
-export class AudioSenderGateway {
-  constructor() { }
+export class AudioUploaderGatewayImpl implements IVoiceUploader {
+  constructor() {}
 
   /**
    * 1) /files/upload に対して音声をアップロード
@@ -14,10 +16,10 @@ export class AudioSenderGateway {
    * 3) /workflows/run に対して file_id を使い、ワークフローを実行
    * 4) 結果(テキストなど)を返す
    */
-  public async send(audio: Audio): Promise<string> {
-    const API_KEY = import.meta.env.VITE_WHISPER_API_KEY || ''
+  public async upload(audio: Audio): Promise<AudioUploadResponse> {
+    const API_KEY = import.meta.env.VITE_DIFY_WHISPER_API_KEY || '';
     if (!API_KEY) {
-      throw new Error('APIキーが設定されていません')
+      throw new Error('APIキーが設定されていません');
     }
 
     // -------------------
@@ -25,15 +27,15 @@ export class AudioSenderGateway {
     // -------------------
     const file = new File([audio.rawData], 'recorded-audio.wav', {
       type: 'audio/wav',
-    })
-    const formData = new FormData()
+    });
+    const formData = new FormData();
     // DifyのAPIが要求するデータをセット
-    formData.append('file', file)
+    formData.append('file', file);
     // 例: 必須ならユーザー情報などを入れる
-    formData.append('user', 'abc-123')
+    formData.append('user', 'abc-123');
 
     // アップロード先URL (configに /files/upload を含める)
-    const difyBaseURL = config.DIFY_BASE_URL
+    const difyBaseURL = config.DIFY_BASE_URL;
     const uploadRes = await fetch(`${difyBaseURL}/files/upload`, {
       method: 'POST',
       // multipart/form-dataで送るので、Content-Typeはブラウザに任せる
@@ -42,18 +44,18 @@ export class AudioSenderGateway {
         Authorization: `Bearer ${API_KEY}`,
       },
       body: formData,
-    })
+    });
 
     if (!uploadRes.ok) {
-      throw new Error(`Failed to upload audio: ${uploadRes.statusText}`)
+      throw new Error(`Failed to upload audio: ${uploadRes.statusText}`);
     }
 
     // JSONをパースしてファイルIDを取得
     // Pythonの例でいう response.json()["id"] に相当
-    const uploadJson = await uploadRes.json()
-    const fileId = uploadJson.id
+    const uploadJson = await uploadRes.json();
+    const fileId = uploadJson.id;
     if (!fileId) {
-      throw new Error('Upload succeeded, but no file ID returned')
+      throw new Error('Upload succeeded, but no file ID returned');
     }
 
     // -------------------
@@ -71,7 +73,7 @@ export class AudioSenderGateway {
       },
       response_mode: 'blocking',
       user: 'abc-123',
-    }
+    };
 
     const runRes = await fetch(`${difyBaseURL}/workflows/run`, {
       method: 'POST',
@@ -80,17 +82,21 @@ export class AudioSenderGateway {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(runPayload),
-    })
+    });
 
     if (!runRes.ok) {
-      throw new Error(`Failed to run workflow: ${runRes.statusText}`)
+      throw new Error(`Failed to run workflow: ${runRes.statusText}`);
     }
 
-    const runJson = await runRes.json()
+    const runJson = await runRes.json();
     // Python例では runJson["data"]["outputs"]["text"] を取得
     // レスポンスの構造はDify側の設定次第
-    const text = runJson?.data?.outputs?.text ?? ''
+    // const text = runJson?.data?.outputs?.text ?? ''
 
-    return text
+    return {
+      status: runJson['data']['status'],
+      output: runJson['data']['outputs']['text'],
+      error: runJson['data']['error'],
+    };
   }
 }

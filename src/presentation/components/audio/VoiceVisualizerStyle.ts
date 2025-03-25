@@ -1,8 +1,8 @@
-import styled from '@emotion/styled'
+import styled from '@emotion/styled';
 
 export const VoiceVisualizerWrapper = styled.div`
   width: 500px;
-  height: 80px;
+  height: 100px;
 
   button {
     padding: 0;
@@ -10,4 +10,4 @@ export const VoiceVisualizerWrapper = styled.div`
   svg {
     display: none;
   }
-`
+`;
