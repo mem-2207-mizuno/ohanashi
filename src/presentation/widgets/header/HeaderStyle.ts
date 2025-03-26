@@ -5,5 +5,6 @@ export const HeaderWrapper = styled.div`
   box-shadow: 0 0 6px 0px rgba(0, 0, 0, 0.3);
 
   display: flex;
-  justify-content: flex-end;
+  justify-content: space-between;
+  align-items: center;
 `;

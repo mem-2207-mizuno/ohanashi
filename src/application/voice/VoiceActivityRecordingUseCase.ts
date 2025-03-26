@@ -11,10 +11,11 @@ import { UploadedChunk } from '../../presentation/types/uploadedChunk';
  */
 export class VoiceActivityRecordingUseCase {
   // しきい値など
-  private volumeThreshold = 0.01;
+  private volumeThreshold = 0.1;
   private silenceDuration = 1000; // ms
   private lastActiveTime = 0;
   private isRecording = false;
+  private isShuttingDown = false;
 
   private uploadedChunks: UploadedChunk[] = [];
   private onUploaded?: (id: string, chunk: UploadedChunk) => void;
@@ -32,6 +33,10 @@ export class VoiceActivityRecordingUseCase {
 
     // 2) volumeCallbackで判定
     this.detector.onVolume(({ rms, timestamp }) => {
+      if (this.isShuttingDown) {
+        // 早期リターン
+        return;
+      }
       if (rms > this.volumeThreshold) {
         // 音あり
         this.lastActiveTime = timestamp;
@@ -64,10 +69,12 @@ export class VoiceActivityRecordingUseCase {
   public async stopAll(): Promise<void> {
     // まだ録音中ならstopRecording()しておく
     if (this.isRecording) {
+      this.isShuttingDown = true;
       await this.handleStopAndUpload();
       this.isRecording = false;
     }
     this.detector.stopAll();
+    this.isShuttingDown = false;
   }
 
   /**

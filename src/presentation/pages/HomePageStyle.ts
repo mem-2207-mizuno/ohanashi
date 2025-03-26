@@ -1,7 +1,7 @@
 import styled from '@emotion/styled';
 
 export const HomePageContainer = styled.div`
-  height: calc(100% - 100px);
+  height: calc(100% - 126px);
 `;
 
 interface TalkerWrapperProps {

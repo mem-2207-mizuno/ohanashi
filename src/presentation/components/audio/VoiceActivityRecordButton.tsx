@@ -1,7 +1,7 @@
 // src/presentation/components/VoiceActivityRecordButton.tsx
 
 import React, { useState } from 'react';
-import { Button, theme } from 'antd';
+import { Button, Skeleton, Space, theme } from 'antd';
 import { useRecordingStore } from '../../stores/recordingStore';
 import { useVoiceActivityRecordingUseCase } from '../../../application/voice/hooks/useVoiceActivityRecordingUseCase';
 import { VoiceVisualizerWrapper } from './VoiceVisualizerStyle';
@@ -11,6 +11,7 @@ import { useChatStore } from '../../stores/chatStore';
 import { AudioChunk } from '../../../application/voice/types/audioChunk';
 import { Typography } from 'antd';
 import { UploadedChunk } from '../../types/uploadedChunk';
+import { StyledVoiceActivityRecordButtonContainer } from './VoiceActivityRecordButtonStyle';
 
 const { Text } = Typography;
 
@@ -22,6 +23,7 @@ const getChunkText = (chunks: UploadedChunk[]) =>
 
 export const VoiceActivityRecordButton: React.FC = () => {
   const [recording, setRecording] = useState(false);
+  const [progress, setProgress] = useState(false);
 
   const voiceRecordingUseCase = useVoiceActivityRecordingUseCase();
 
@@ -52,37 +54,43 @@ export const VoiceActivityRecordButton: React.FC = () => {
       setRecording(true);
     } else {
       // stopAll
+      setProgress(true);
       await voiceRecordingUseCase.stopAll();
 
       recorderControls.stopRecording();
       setRecording(false);
 
-      addChat({
-        id: '',
-        talker: 'user',
-        audioChunks: uploadedChunks.reduce((acc: AudioChunk[], ch) => {
-          if (ch.status !== 'success' || !ch.applicationData) {
+      const voiceText = getChunkText(uploadedChunks);
+      if (voiceText.length > 0) {
+        addChat({
+          id: '',
+          talker: 'user',
+          audioChunks: uploadedChunks.reduce((acc: AudioChunk[], ch) => {
+            if (ch.status !== 'success' || !ch.applicationData) {
+              return acc;
+            }
+
+            acc.push({
+              audio: ch.applicationData?.audio,
+              outputText: ch.applicationData?.outputText,
+              errorMessage: ch.applicationData.errorMessage,
+            });
+
             return acc;
-          }
-
-          acc.push({
-            audio: ch.applicationData?.audio,
-            outputText: ch.applicationData?.outputText,
-            errorMessage: ch.applicationData.errorMessage,
-          });
-
-          return acc;
-        }, []),
-        text: getChunkText(uploadedChunks),
-        createdAt: new Date(),
-      });
+          }, []),
+          text: getChunkText(uploadedChunks),
+          createdAt: new Date(),
+        });
+      }
 
       clearChunks();
+
+      setProgress(false);
     }
   };
 
   return (
-    <div>
+    <StyledVoiceActivityRecordButtonContainer>
       <div
         style={{
           display: 'flex',
@@ -107,6 +115,7 @@ export const VoiceActivityRecordButton: React.FC = () => {
             type={recording ? 'primary' : 'default'}
             onClick={handleClick}
             style={{ marginBottom: '0' }}
+            loading={progress}
           >
             {/* {recording ? '停止' : '録音開始'} */}
           </Button>
@@ -138,7 +147,23 @@ export const VoiceActivityRecordButton: React.FC = () => {
           )}
         </div>
       </div>
-      <Text>{getChunkText(uploadedChunks)}</Text>
-    </div>
+      <Space wrap>
+        {uploadedChunks
+          .filter(
+            (ch) =>
+              ch.status === 'loading' ||
+              (ch.status === 'success' &&
+                ch.applicationData?.outputText != null && // null や undefined を除外
+                ch.applicationData.outputText !== ''),
+          )
+          .map((ch) =>
+            ch.status === 'success' ? (
+              <Text>{ch.applicationData?.outputText}</Text>
+            ) : (
+              <Skeleton.Input active={true} size="small" />
+            ),
+          )}
+      </Space>
+    </StyledVoiceActivityRecordButtonContainer>
   );
 };

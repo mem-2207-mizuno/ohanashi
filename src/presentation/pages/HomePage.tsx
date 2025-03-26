@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 
-import { Avatar, List, theme } from 'antd';
+import { Avatar, theme } from 'antd';
 import { VoiceActivityRecordButton } from '../components/audio/VoiceActivityRecordButton';
 import {
   HomeMain,
@@ -8,9 +8,9 @@ import {
   TalkerWrapper,
   VoiceControllerWrapper,
 } from './HomePageStyle';
-import Item from 'antd/es/descriptions/Item';
 import { useChatStore } from '../stores/chatStore';
 import { useChat } from '../hooks/useChat';
+import ChatList from '../components/chat/chatList';
 
 export const HomePage: React.FC = () => {
   const chatLogs = useChatStore((state) => state.chatLogs);
@@ -42,24 +42,7 @@ export const HomePage: React.FC = () => {
             backgroundColor: token.colorFill,
           }}
         >
-          <List>
-            {chatLogs.map((chat, i) => {
-              return (
-                <Item key={i}>
-                  <List.Item.Meta
-                    avatar={
-                      <Avatar
-                        src={`https://api.dicebear.com/7.x/miniavs/svg?seed=${
-                          chat.talker === 'ai' ? '100' : '3'
-                        }`}
-                      />
-                    }
-                    title={chat.text}
-                  />
-                </Item>
-              );
-            })}
-          </List>
+          <ChatList chatLogs={chatLogs} />
         </div>
       </HomeMain>
       <VoiceControllerWrapper>

@@ -1,7 +1,6 @@
 import { useMemo } from 'react';
 import { ChatUseCase } from '../ChatUseCase';
-// import { ChatRepositoryDifyImpl } from '../../../infrastructure/chat/ChatRepositoryDifyImpl';
-import { ChatRepositoryChatgptImpl } from '../../../infrastructure/chat/ChatRepositoryChatgptImpl';
+import { ChatRepositoryDifyImpl } from '../../../infrastructure/chat/ChatRepositoryDifyImpl';
 
 /**
  * ユースケースのインスタンス生成をカプセル化するカスタムフック
@@ -9,7 +8,6 @@ import { ChatRepositoryChatgptImpl } from '../../../infrastructure/chat/ChatRepo
 export const useChatDifyUseCase = (): ChatUseCase =>
   useMemo(() => {
     // ここで依存性を生成する
-    // const chatRepository = new ChatRepositoryDifyImpl();
-    const chatRepository = new ChatRepositoryChatgptImpl();
+    const chatRepository = new ChatRepositoryDifyImpl();
     return new ChatUseCase(chatRepository);
   }, []);
